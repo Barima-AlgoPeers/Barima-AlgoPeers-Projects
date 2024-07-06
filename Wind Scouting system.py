@@ -1,34 +1,38 @@
-# Import all necessary libaries
-from machine import ADC, Pin, UART
+#import all the necessary libraries
+from machine import ADC,Pin, UART
 import utime
 
-# Intialize the ADC pin
+#intialize the ADC pin
 adc = ADC(Pin(26))
 
-# Intialize UART module for bluetooth connection
-uart = UART(, baudrate=9600, tx+Pin(0), rx=Pin(1))
+# initialize UART module for bluetooth communication
+uart = UART(0, baudrate=9600,tx=Pin(0), rx=Pin(1))
 
-# Reference Voltage and ADC resolution
-vref = 3.3 # This is the maximum voltage the Raspberyy Pi Pico W can handle, read and handle
+#Reference Voltage and ADC resolution
+vref = 3.3 # The maximum voltage the raspberry pi pico can take
 
-adc_resolution = 65535 # This is the range of values the adc can output or give as information to the user,
+adc_resolution = 65535 #The range of values the ADC can output
 
-# Function to convert rav values/data to voltage/information.
+
+# Function to convert raw values to voltage
+
 def read_wind_speed():
     adc_value = adc.read_u16()
-    voltage = adc_value * vref / adc_resolution # the voltage is equal to the adc value by the voltage refrence i think devided by the adc resolution.
+    voltage = adc_value * vref / adc_resolution
     return voltage
 
-# Function to add or append all incoming data to a data_file.
+# Function to add or append all incoming data to a data_file
+
 def wind_speed_data_to_file(timestamp_str, voltage):
     try:
-        with open("wind_speed_data_file.csv", 'a') as data_file: # Open the data file in an append mode
-            data_file.write("(), {:2f}\n".format(timestamp_str, voltage))
-        except Exception as e:
-            print("Error writing to file", e)
-            
-            
-# Function to loop the program forever
+        with open("wind_speed_data_file.csv", "a") as data_file: #open data file in an append mode
+            data_file.write("{}, {:.2f}\n".format(timestamp_str, voltage))
+    except Exception as e:
+        print("Error writing to file:", e)
+        
+        
+#Function to loop the program forever
+
 def main():
     while True:
         voltage = read_wind_speed()
@@ -37,30 +41,33 @@ def main():
         timestamp = utime.localtime()
         
         # Define the format for the timestamp
-        timestamp_str = "{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}".format(timestamp(0), timestamp(1), timestamp(2), timestamp(3), timestamp(4), timestamp(5))
+        timestamp_str = "{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}".format(timestamp[0],timestamp[1],timestamp[2],
+                                                                           timestamp[3],timestamp[4],timestamp[5] )
         
-        # Append or add wind speed data to file
+        #Append or add wind speed data to file
         wind_speed_data_to_file(timestamp_str, voltage)
         
-        # Print the timestamp and voltage to the thonny console or shell
-        print("Timestamp:{}, Wind speed in Voltage(V): {:2f}V". format(timestamp_str, voltage))
+        #Print the timestamp and voltage to the thonny console or shell
+        print("Timestamp:{}, Wind Speed in Voltage(V): {:.2f}V". format(timestamp_str, voltage))
         
-        # Send the voltage through bluetooth to the App
-        uart.write(f"{timestamp_str},{Voltage}\n")
+        #Send the voltage through bluetooth to the App
+        uart.write(f"{timestamp_str},{voltage}\n")
         
         utime.sleep(1)
         
         
-# Initialize the data file with the header if it doesn't exist
+        
+# initialize the data file with header if it doesn't exist
 try:
-    with open("wild_speed_data_file.csv", "r") as data_file:
+    with open("wind_speed_data_file.csv", "r") as data_file:
         pass
 except OSError:
-    with Open("wild_speed_data_file.csv", "w") as data_file:
+    with open("wind_speed_data_file.csv", "w") as data_file:
         data_file.write("Timestamp_str, Voltage\n")
         
         
 try:
     main()
 except KeyboardInterrupt:
-    print("Program Interrupted by keyboard.")
+    print("Program Interrupted.")
+    
